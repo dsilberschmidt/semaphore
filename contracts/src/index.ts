@@ -1,3 +1,3 @@
-import { Semaphore } from './Semaphore.js';
+import { SemaphoreZkApp } from './Semaphore.js';
 
-export { Semaphore };
+export { SemaphoreZkApp };

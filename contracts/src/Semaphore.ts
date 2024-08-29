@@ -12,24 +12,24 @@ import {
     @state(Field) public nullifier = State<Field>();
     @state(Field) public identityCommitment = State<Field>();
   
-    @method init() {
+    @method async init() {
       this.merkleRoot.set(new Field(0));
       this.nullifier.set(new Field(0));
       this.identityCommitment.set(new Field(0));
     }
   
-    @method generateIdentity(secret: Field) {
+    @method async generateIdentity(secret: Field) {
       const publicKey = this.generatePublicKey(secret);
       const identityCommitment = Poseidon.hash([publicKey.x, publicKey.y]);
       this.identityCommitment.set(identityCommitment);
     }
   
-    @method verifyMembership(merkleProof: MerkleProof) {
+    @method async verifyMembership(merkleProof: MerkleProof) {
       let computedRoot = this.computeMerkleRoot(this.identityCommitment.get(), merkleProof);
       computedRoot.assertEquals(this.merkleRoot.get(), "Merkle root does not match");
     }
   
-    @method generateNullifier(scope: Field, secret: Field) {
+    @method async generateNullifier(scope: Field, secret: Field) {
       const nullifier = Poseidon.hash([scope, secret]);
       this.nullifier.set(nullifier);
     }

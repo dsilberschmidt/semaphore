@@ -5,6 +5,10 @@ import {
     State,
     Field,
     Poseidon,
+    Group,
+    Scalar,
+    PrivateKey,
+    PublicKey,
   } from 'o1js';
   
   export class SemaphoreZkApp extends SmartContract {
@@ -35,9 +39,20 @@ import {
     }
   
     private generatePublicKey(secret: Field): { x: Field, y: Field } {
-      return { x: secret, y: secret }; // Placeholder
+      // Convert the Field element to a scalar
+      const scalarSecret = Scalar.fromFields([secret]);
+      
+      // Perform scalar multiplication on the curve's base point
+      const publicKeyPoint = Group.generator.scale(scalarSecret);
+      
+      // Extract the x and y coordinates from the resulting group element
+      const x = publicKeyPoint.x;
+      const y = publicKeyPoint.y;
+      
+      // Return the coordinates as an object
+      return { x, y };
     }
-  
+
     private computeMerkleRoot(leaf: Field, proof: MerkleProof): Field {
       let currentHash = leaf;
       for (let i = 0; i < proof.indices.length; i++) {

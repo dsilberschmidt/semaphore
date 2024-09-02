@@ -7,10 +7,13 @@ import {
     Poseidon,
     Group,
     Scalar,
-    //PrivateKey,
-    //PublicKey,
+    Struct
   } from 'o1js';
   
+  class MerkleProof extends Struct({
+    indices: Array(Field),
+    siblings: Array(Field)
+  }) {}
   export class SemaphoreZkApp extends SmartContract {
     @state(Field) public merkleRoot = State<Field>();
     @state(Field) public nullifier = State<Field>();
@@ -40,7 +43,7 @@ import {
   
     //Following methods, originally private,  were made public 
     //  for testing purposes during development
-    
+
     public generatePublicKey(secret: Field): { x: Field, y: Field } {
       const scalarSecret = Scalar.fromFields([secret]);
       // Perform scalar multiplication on the curve's base point
@@ -62,8 +65,4 @@ import {
       return currentHash;
     }
   }
-  
-  interface MerkleProof {
-    indices: Field[];
-    siblings: Field[];
-  }
+ 

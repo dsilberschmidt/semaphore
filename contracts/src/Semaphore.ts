@@ -7,8 +7,8 @@ import {
     Poseidon,
     Group,
     Scalar,
-    PrivateKey,
-    PublicKey,
+    //PrivateKey,
+    //PublicKey,
   } from 'o1js';
   
   export class SemaphoreZkApp extends SmartContract {
@@ -38,7 +38,10 @@ import {
       this.nullifier.set(nullifier);
     }
   
-    private generatePublicKey(secret: Field): { x: Field, y: Field } {
+    //Following methods, originally private,  were made public 
+    //  for testing purposes during development
+    
+    public generatePublicKey(secret: Field): { x: Field, y: Field } {
       const scalarSecret = Scalar.fromFields([secret]);
       // Perform scalar multiplication on the curve's base point
       const publicKeyPoint = Group.generator.scale(scalarSecret);
@@ -47,7 +50,7 @@ import {
       return { x, y };
     }
 
-    private computeMerkleRoot(leaf: Field, proof: MerkleProof): Field {
+    public computeMerkleRoot(leaf: Field, proof: MerkleProof): Field {
       let currentHash = leaf;
       for (let i = 0; i < proof.indices.length; i++) {
         if (proof.indices[i].equals(new Field(1))) {

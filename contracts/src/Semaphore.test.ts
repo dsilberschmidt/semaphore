@@ -28,14 +28,18 @@ describe('SemaphoreZkApp Tests', () => {
     localBlockchain = await Mina.LocalBlockchain();
     Mina.setActiveInstance(localBlockchain);
     deployerAccount = localBlockchain.testAccounts[0];
+    deployerKey = deployerAccount.key // Ensure we have the deployer's private key for signing
+
     zkApp = new SemaphoreZkApp(deployerAccount);
+    zkAppPrivateKey = PrivateKey.random();
 
     // Deploy the zkApp
     const deployTxn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
       await zkApp.deploy();
     });
-    await deployTxn.send().wait();
+    await deployTxn.prove();
+    await deployTxn.sign([deployerKey,zkAppPrivateKey]).send();
 
     // Fetch the zkApp account to ensure it's in the ledger
     await localBlockchain.getAccount(zkApp.address);

@@ -33,7 +33,7 @@ describe('SemaphoreZkApp Tests', () => {
     // Deploy the zkApp
     const deployTxn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      zkApp.deploy();
+      await zkApp.deploy();
     });
     await deployTxn.send().wait();
 

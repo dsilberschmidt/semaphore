@@ -34,6 +34,7 @@ import {
     }
   
     @method async verifyMembership(merkleProof: MerkleProof) {
+      this.merkleRoot.requireEquals(this.merkleRoot.get());
       let computedRoot = this.computeMerkleRoot(this.identityCommitment.get(), merkleProof);
       computedRoot.assertEquals(this.merkleRoot.get(), "Merkle root does not match");
     }

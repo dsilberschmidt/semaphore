@@ -6,8 +6,8 @@ import {
   PublicKey,
   AccountUpdate,
   Poseidon,
-  Signature,
-  //isReady,
+  SmartContract,
+  Bool,
 } from 'o1js';
 
 let proofsEnabled = false;
@@ -20,9 +20,26 @@ describe('SemaphoreZkApp Tests', () => {
     zkAppAddress: PublicKey,
     zkAppPrivateKey: PrivateKey,
     zkApp: SemaphoreZkApp;
+  let   localBlockchain;
 
   beforeAll(async () => {
-    if (proofsEnabled) await SemaphoreZkApp.compile();
+    //if (proofsEnabled) await SemaphoreZkApp.compile();
+    await SemaphoreZkApp.compile();
+    localBlockchain = await Mina.LocalBlockchain();
+    Mina.setActiveInstance(localBlockchain);
+    deployerAccount = localBlockchain.testAccounts[0];
+    zkApp = new SemaphoreZkApp(deployerAccount);
+
+    // Deploy the zkApp
+    const deployTxn = await Mina.transaction(deployerAccount, async () => {
+      AccountUpdate.fundNewAccount(deployerAccount);
+      zkApp.deploy();
+    });
+    await deployTxn.send().wait();
+
+    // Fetch the zkApp account to ensure it's in the ledger
+    await localBlockchain.getAccount(zkApp.address);
+    
   });
 
   beforeEach(async () => {
@@ -48,23 +65,26 @@ describe('SemaphoreZkApp Tests', () => {
 
   it('initializes the SemaphoreZkApp with default values', async () => {
     await localDeploy();
+  // Alternatively, ensure preconditions are set in the zkApp methods being tested
     expect(await zkApp.merkleRoot.get()).toEqual(Field(0));
     expect(await zkApp.nullifier.get()).toEqual(Field(0));
     expect(await zkApp.identityCommitment.get()).toEqual(Field(0));
   });
 
+  
   it('generates an identity commitment and updates state', async () => {
-    await localDeploy();
-    const secret = Field(12345);
+    const secret = new Field(12345678767); // Ensure this matches the secret used in actual zkApp calls
     await zkApp.generateIdentity(secret);
     const publicKey = zkApp.generatePublicKey(secret);
     const expectedIdentityCommitment = Poseidon.hash([publicKey.x, publicKey.y]);
-    expect(await zkApp.identityCommitment.get()).toEqual(expectedIdentityCommitment);
+  
+    const actualIdentityCommitment = await zkApp.identityCommitment.get();
+    expect(actualIdentityCommitment).toEqual(expectedIdentityCommitment);
   });
 
   it('verifies membership with a valid Merkle proof', async () => {
     await localDeploy();
-    const secret = Field(12345);
+    const secret = new Field(12345678767);
     await zkApp.generateIdentity(secret);
     const merkleProof = {
       indices: [Field(1), Field(0)],

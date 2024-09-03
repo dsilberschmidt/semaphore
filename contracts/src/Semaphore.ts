@@ -18,8 +18,10 @@ import {
     @state(Field) public merkleRoot = State<Field>();
     @state(Field) public nullifier = State<Field>();
     @state(Field) public identityCommitment = State<Field>();
+    
   
     @method async init() {
+      super.init();
       this.merkleRoot.set(new Field(0));
       this.nullifier.set(new Field(0));
       this.identityCommitment.set(new Field(0));
@@ -44,14 +46,22 @@ import {
     //Following methods, originally private,  were made public 
     //  for testing purposes during development
 
-    public generatePublicKey(secret: Field): { x: Field, y: Field } {
+/*     public generatePublicKey(secret: Field): { x: Field, y: Field } {
       const scalarSecret = Scalar.fromFields([secret]);
       // Perform scalar multiplication on the curve's base point
       const publicKeyPoint = Group.generator.scale(scalarSecret);
       const x = publicKeyPoint.x;
       const y = publicKeyPoint.y;
       return { x, y };
-    }
+    } */
+   
+      public generatePublicKey(secret: Field): { x: Field, y: Field } {
+        // Example: Using a constant Field value as the second field
+        const additionalField = new Field(1);  // Adjust this value as needed for your application
+        const scalarSecret = Scalar.fromFields([secret, additionalField]);
+        const publicKeyPoint = Group.generator.scale(scalarSecret);
+        return { x: publicKeyPoint.x, y: publicKeyPoint.y };
+      }
 
     public computeMerkleRoot(leaf: Field, proof: MerkleProof): Field {
       let currentHash = leaf;

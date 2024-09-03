@@ -65,6 +65,7 @@ describe('SemaphoreZkApp Tests', () => {
 
   it('initializes the SemaphoreZkApp with default values', async () => {
     await localDeploy();
+    
   // Alternatively, ensure preconditions are set in the zkApp methods being tested
     expect(await zkApp.merkleRoot.get()).toEqual(Field(0));
     expect(await zkApp.nullifier.get()).toEqual(Field(0));
@@ -73,7 +74,7 @@ describe('SemaphoreZkApp Tests', () => {
 
   
   it('generates an identity commitment and updates state', async () => {
-    const secret = new Field(12345678767); // Ensure this matches the secret used in actual zkApp calls
+    const secret = new Field(123456); // Ensure this matches the secret used in actual zkApp calls
     await zkApp.generateIdentity(secret);
     const publicKey = zkApp.generatePublicKey(secret);
     const expectedIdentityCommitment = Poseidon.hash([publicKey.x, publicKey.y]);
@@ -84,7 +85,7 @@ describe('SemaphoreZkApp Tests', () => {
 
   it('verifies membership with a valid Merkle proof', async () => {
     await localDeploy();
-    const secret = new Field(12345678767);
+    const secret = new Field(123456);
     await zkApp.generateIdentity(secret);
     const merkleProof = {
       indices: [Field(1), Field(0)],

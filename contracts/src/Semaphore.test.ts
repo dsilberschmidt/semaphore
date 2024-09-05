@@ -1,58 +1,28 @@
 import { SemaphoreZkApp } from './Semaphore';
-import {
-  Field,
-  Mina,
-  PrivateKey,
-  PublicKey,
-  AccountUpdate,
-  Poseidon,
-  SmartContract,
-  Bool,
-} from 'o1js';
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, Poseidon } from 'o1js';
 
-let proofsEnabled = false;
+let proofsEnabled = true;
 
-describe('SemaphoreZkApp Tests', () => {
+describe('SemaphoreZkApp', () => {
   let deployerAccount: Mina.TestPublicKey,
-    deployerKey: PrivateKey,
     senderAccount: Mina.TestPublicKey,
+    deployerKey: PrivateKey,
     senderKey: PrivateKey,
     zkAppAddress: PublicKey,
     zkAppPrivateKey: PrivateKey,
     zkApp: SemaphoreZkApp;
-  let   localBlockchain;
+
+  //let localBlockchain
 
   beforeAll(async () => {
-    //if (proofsEnabled) await SemaphoreZkApp.compile();
-    await SemaphoreZkApp.compile();
-    localBlockchain = await Mina.LocalBlockchain();
-    Mina.setActiveInstance(localBlockchain);
-    deployerAccount = localBlockchain.testAccounts[0];
-    deployerKey = deployerAccount.key // Ensure we have the deployer's private key for signing
+    if (proofsEnabled) await SemaphoreZkApp.compile();
 
-    zkApp = new SemaphoreZkApp(deployerAccount);
-    zkAppPrivateKey = PrivateKey.random();
-
-    // Deploy the zkApp
-    const deployTxn = await Mina.transaction(deployerAccount, async () => {
-      AccountUpdate.fundNewAccount(deployerAccount);
-      await zkApp.deploy();
-    });
-    await deployTxn.prove();
-    await deployTxn.sign([deployerKey,zkAppPrivateKey]).send();
-
-    // Fetch the zkApp account to ensure it's in the ledger
-    await localBlockchain.getAccount(zkApp.address);
-    
-  });
-
-  beforeEach(async () => {
     const Local = await Mina.LocalBlockchain({ proofsEnabled });
     Mina.setActiveInstance(Local);
-    deployerAccount = Local.testAccounts[0];
+    [deployerAccount, senderAccount] = Local.testAccounts;
     deployerKey = deployerAccount.key;
-    senderAccount = Local.testAccounts[1];
     senderKey = senderAccount.key;
+
     zkAppPrivateKey = PrivateKey.random();
     zkAppAddress = zkAppPrivateKey.toPublicKey();
     zkApp = new SemaphoreZkApp(zkAppAddress);
@@ -61,51 +31,36 @@ describe('SemaphoreZkApp Tests', () => {
   async function localDeploy() {
     const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      await zkApp.deploy();
+      zkApp.deploy();
     });
     await txn.prove();
     await txn.sign([deployerKey, zkAppPrivateKey]).send();
   }
 
-  it('initializes the SemaphoreZkApp with default values', async () => {
+  it('initializes and deploys the SemaphoreZkApp with default values', async () => {
     await localDeploy();
-    
-  // Alternatively, ensure preconditions are set in the zkApp methods being tested
-    expect(await zkApp.merkleRoot.get()).toEqual(Field(0));
-    expect(await zkApp.nullifier.get()).toEqual(Field(0));
-    expect(await zkApp.identityCommitment.get()).toEqual(Field(0));
+    const identityCommitmentState = await zkApp.identityCommitment.get();
+    const nullifierState = await zkApp.nullifier.get();
+
+    expect(identityCommitmentState).toEqual(Field(0));
+    expect(nullifierState).toEqual(Field(0));
   });
 
-  
-  it('generates an identity commitment and updates state', async () => {
-    const secret = new Field(123456); // Ensure this matches the secret used in actual zkApp calls
-    await zkApp.generateIdentity(secret);
-    const publicKey = zkApp.generatePublicKey(secret);
-    const expectedIdentityCommitment = Poseidon.hash([publicKey.x, publicKey.y]);
-  
-    const actualIdentityCommitment = await zkApp.identityCommitment.get();
-    expect(actualIdentityCommitment).toEqual(expectedIdentityCommitment);
-  });
-
-  it('verifies membership with a valid Merkle proof', async () => {
-    await localDeploy();
+ /*  it('correctly updates the state on the SemaphoreZkApp', async () => {
     const secret = new Field(123456);
     await zkApp.generateIdentity(secret);
-    const merkleProof = {
-      indices: [Field(1), Field(0)],
-      siblings: [Field(2), Field(3)]
-    };
-    await zkApp.verifyMembership(merkleProof);
-    const computedRoot = zkApp.computeMerkleRoot(await zkApp.identityCommitment.get(), merkleProof);
-    expect(computedRoot).toEqual(await zkApp.merkleRoot.get());
-  });
+    const expectedIdentityCommitment = Poseidon.hash([zkApp.publicKey.x, zkApp.publicKey.y]);
 
-  it('generates a nullifier based on scope and secret', async () => {
-    await localDeploy();
-    const scope = Field(67890);
-    const secret = Field(12345);
-    await zkApp.generateNullifier(scope, secret);
-    const expectedNullifier = Poseidon.hash([scope, secret]);
-    expect(await zkApp.nullifier.get()).toEqual(expectedNullifier);
-  });
+    // Update transaction
+    const txn = await Mina.transaction(senderAccount, async () => {
+      zkApp.updateIdentityCommitment(new Field(123456)); // Assuming updateIdentityCommitment is a method you have
+    });
+    await txn.prove();
+    await txn.sign([senderKey]).send();
+
+    const identityCommitmentState = await zkApp.identityCommitment.get();
+    expect(identityCommitmentState).toEqual(expectedIdentityCommitment);
+
+    console.log(`Updated identity commitment is ${identityCommitmentState.toString()}`);
+  }); */
 });

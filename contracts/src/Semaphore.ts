@@ -30,8 +30,14 @@ import {
     @method async generateIdentity(secret: Field) {
       const publicKey = this.generatePublicKey(secret);
       const identityCommitment = Poseidon.hash([publicKey.x, publicKey.y]);
+      console.log(identityCommitment);
       this.identityCommitment.set(identityCommitment);
     }
+
+    /* @method async updateIdentityCommitment(newSecret: Field) {
+      const newIdentityCommitment = this.calculateIdentityCommitment(newSecret);
+      await this.identityCommitment.set(newIdentityCommitment);
+  } */
   
     @method async verifyMembership(merkleProof: MerkleProof) {
       this.merkleRoot.requireEquals(this.merkleRoot.get());
@@ -76,5 +82,10 @@ import {
       }
       return currentHash;
     }
+
+    /* public calculateIdentityCommitment(secret: Field): Field {
+      // Example calculation using Poseidon hash, adjust according to your needs
+      return Poseidon.hash([secret]);
+  } */
   }
  

@@ -31,36 +31,53 @@ describe('SemaphoreZkApp', () => {
   async function localDeploy() {
     const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
+      //AccountUpdate.fundNewAccount(senderAccount);
       zkApp.deploy();
     });
     await txn.prove();
     await txn.sign([deployerKey, zkAppPrivateKey]).send();
+    //await txn.sign([deployerKey]).send();
   }
 
   it('initializes and deploys the SemaphoreZkApp with default values', async () => {
     await localDeploy();
-    const identityCommitmentState = await zkApp.identityCommitment.get();
-    const nullifierState = await zkApp.nullifier.get();
+    const identityCommitmentState = zkApp.identityCommitment.get();
+    const nullifierState = zkApp.nullifier.get();
 
     expect(identityCommitmentState).toEqual(Field(0));
     expect(nullifierState).toEqual(Field(0));
   });
 
- /*  it('correctly updates the state on the SemaphoreZkApp', async () => {
+ 
+  it('generates an identity commitment and updates state', async () => {
+    const secret = new Field(123456); // Ensure this matches the secret used in actual zkApp calls
+    await zkApp.generateIdentity(secret);
+    const publicKey = zkApp.generatePublicKey(secret);
+    const expectedIdentityCommitment = Poseidon.hash([publicKey.x, publicKey.y]);
+  
+    const actualIdentityCommitment = zkApp.identityCommitment.get();
+    expect(actualIdentityCommitment).toEqual(expectedIdentityCommitment);
+  });
+
+  it('verifies membership with a valid Merkle proof', async () => {
+    await localDeploy();
     const secret = new Field(123456);
     await zkApp.generateIdentity(secret);
-    const expectedIdentityCommitment = Poseidon.hash([zkApp.publicKey.x, zkApp.publicKey.y]);
+    const merkleProof = {
+      indices: [Field(1), Field(0)],
+      siblings: [Field(2), Field(3)]
+    };
+    await zkApp.verifyMembership(merkleProof);
+    const computedRoot = zkApp.computeMerkleRoot(zkApp.identityCommitment.get(), merkleProof);
+    expect(computedRoot).toEqual(zkApp.merkleRoot.get());
+  });
 
-    // Update transaction
-    const txn = await Mina.transaction(senderAccount, async () => {
-      zkApp.updateIdentityCommitment(new Field(123456)); // Assuming updateIdentityCommitment is a method you have
-    });
-    await txn.prove();
-    await txn.sign([senderKey]).send();
-
-    const identityCommitmentState = await zkApp.identityCommitment.get();
-    expect(identityCommitmentState).toEqual(expectedIdentityCommitment);
-
-    console.log(`Updated identity commitment is ${identityCommitmentState.toString()}`);
-  }); */
+  it('generates a nullifier based on scope and secret', async () => {
+    await localDeploy();
+    const scope = Field(67890);
+    const secret = Field(12345);
+    await zkApp.generateNullifier(scope, secret);
+    const expectedNullifier = Poseidon.hash([scope, secret]);
+    expect(zkApp.nullifier.get()).toEqual(expectedNullifier);
+  });
 });

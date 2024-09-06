@@ -39,6 +39,8 @@ describe('SemaphoreZkApp', () => {
     //await txn.sign([deployerKey]).send();
   }
 
+    //await localDeploy();  
+
   it('initializes and deploys the SemaphoreZkApp with default values', async () => {
     await localDeploy();
     const identityCommitmentState = zkApp.identityCommitment.get();
@@ -60,7 +62,7 @@ describe('SemaphoreZkApp', () => {
   });
 
   it('verifies membership with a valid Merkle proof', async () => {
-    await localDeploy();
+    //await localDeploy();
     const secret = new Field(123456);
     await zkApp.generateIdentity(secret);
     const merkleProof = {
@@ -73,7 +75,7 @@ describe('SemaphoreZkApp', () => {
   });
 
   it('generates a nullifier based on scope and secret', async () => {
-    await localDeploy();
+    //await localDeploy();
     const scope = Field(67890);
     const secret = Field(12345);
     await zkApp.generateNullifier(scope, secret);

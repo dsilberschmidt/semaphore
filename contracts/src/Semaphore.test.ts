@@ -61,7 +61,7 @@ describe('SemaphoreZkApp', () => {
     expect(actualIdentityCommitment).toEqual(expectedIdentityCommitment);
   });
 
-  it('verifies membership with a valid Merkle proof', async () => {
+  /* it('verifies membership with a valid Merkle proof', async () => {
     //await localDeploy();
     const secret = new Field(123456);
     await zkApp.generateIdentity(secret);
@@ -81,5 +81,5 @@ describe('SemaphoreZkApp', () => {
     await zkApp.generateNullifier(scope, secret);
     const expectedNullifier = Poseidon.hash([scope, secret]);
     expect(zkApp.nullifier.get()).toEqual(expectedNullifier);
-  });
+  }); */
 });

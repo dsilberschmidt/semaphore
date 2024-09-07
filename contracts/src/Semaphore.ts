@@ -30,7 +30,7 @@ import {
     @method async generateIdentity(secret: Field) {
       const publicKey = this.generatePublicKey(secret);
       const identityCommitment = Poseidon.hash([publicKey.x, publicKey.y]);
-      console.log(identityCommitment);
+      //console.log(identityCommitment);
       this.identityCommitment.set(identityCommitment);
     }
 

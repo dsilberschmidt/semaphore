@@ -28,11 +28,20 @@ import {
     }
   
     @method async generateIdentity(secret: Field) {
+      this.identityCommitment.requireEquals(this.identityCommitment.get());
+      console.log("MMM secret", secret);
       const publicKey = this.generatePublicKey(secret);
+      console.log("MMM publicKey", publicKey);
       const identityCommitment = Poseidon.hash([publicKey.x, publicKey.y]);
-      //console.log(identityCommitment);
+      console.log("MMM identityCommitment", identityCommitment);
       this.identityCommitment.set(identityCommitment);
+      await new Promise(resolve => setTimeout(resolve, 10000));  // Simple delay to wait for confirmation
+
+      console.log("MMM identityCommitment.get", this.identityCommitment.get());
+      
     }
+
+    
 
     /* @method async updateIdentityCommitment(newSecret: Field) {
       const newIdentityCommitment = this.calculateIdentityCommitment(newSecret);

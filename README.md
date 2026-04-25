@@ -72,6 +72,7 @@ This structure may change as the prototype evolves.
 
 - GitHub repository: https://github.com/dsilberschmidt/semaphore
 - ETHOnline showcase: https://ethglobal.com/showcase/semaphore-in-mina-u9zpf
+- Technical overview: [TECHNICAL_OVERVIEW.md](TECHNICAL_OVERVIEW.md)
 
 ## Notes
 
